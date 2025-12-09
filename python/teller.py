@@ -1,5 +1,6 @@
 from model_objects import Offer
 from receipt import Receipt
+from offers_handler import main as offers_handler_main
 
 
 class Teller:
@@ -21,6 +22,6 @@ class Teller:
             price = quantity * unit_price
             receipt.add_product(p, quantity, unit_price, price)
 
-        the_cart.handle_offers(receipt, self.offers, self.catalog)
+        offers_handler_main(the_cart, receipt, self.offers, self.catalog)
 
         return receipt
