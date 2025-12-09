@@ -46,7 +46,7 @@ class SupermarketTest(unittest.TestCase):
     def test_ten_percent_discount(self):
         catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(1.0)
 
-        teller.add_special_offer(SpecialOfferType.TEN_PERCENT_DISCOUNT, catalog.products["toothbrush"], 10.0)
+        teller.add_special_offer(SpecialOfferType.TEN_PERCENT_DISCOUNT, catalog.products["toothbrush"])
         receipt = teller.checks_out_articles_from(cart)
         self.assertAlmostEqual(receipt.total_price(), 5.866, places=2)
         self.assertEqual(1, len(receipt.discounts))
@@ -55,7 +55,7 @@ class SupermarketTest(unittest.TestCase):
     def test_three_for_two_discount(self):
         catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(3.0)
 
-        teller.add_special_offer(SpecialOfferType.THREE_FOR_TWO, catalog.products["toothbrush"], None)
+        teller.add_special_offer(SpecialOfferType.THREE_FOR_TWO, catalog.products["toothbrush"])
         receipt = teller.checks_out_articles_from(cart)
         self.assertAlmostEqual(receipt.total_price(), 6.955, places=2)
         self.assertEqual(1, len(receipt.discounts))
@@ -64,7 +64,7 @@ class SupermarketTest(unittest.TestCase):
     def test_three_for_two_discount_bis(self):
         catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(2.0)
 
-        teller.add_special_offer(SpecialOfferType.THREE_FOR_TWO, catalog.products["toothbrush"], None)
+        teller.add_special_offer(SpecialOfferType.THREE_FOR_TWO, catalog.products["toothbrush"])
         receipt = teller.checks_out_articles_from(cart)
         self.assertAlmostEqual(receipt.total_price(), 6.955, places=2)
         self.assertEqual(0, len(receipt.discounts))
