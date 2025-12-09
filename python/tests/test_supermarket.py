@@ -7,7 +7,7 @@ from tests.fake_catalog import FakeCatalog
 
 
 class SupermarketTest(unittest.TestCase):
-    def test_ten_percent_discount(self):
+    def get_test_catalog(self):
         catalog = FakeCatalog()
         toothbrush = Product("toothbrush", ProductUnit.EACH)
         catalog.add_product(toothbrush, 0.99)
@@ -15,19 +15,95 @@ class SupermarketTest(unittest.TestCase):
         apples = Product("apples", ProductUnit.KILO)
         catalog.add_product(apples, 1.99)
 
+        return catalog
+
+    def get_test_discount_cart(self):
+        return
+
+    def test_generic(self):
+        catalog = self.get_test_catalog()
+
         teller = Teller(catalog)
-        teller.add_special_offer(SpecialOfferType.TEN_PERCENT_DISCOUNT, toothbrush, 10.0)
 
         cart = ShoppingCart()
-        cart.add_item_quantity(apples, 2.5)
+        cart.add_item_quantity(catalog.products["apples"], 2.5)
+
+        teller.add_special_offer(SpecialOfferType.TEN_PERCENT_DISCOUNT, catalog.products["toothbrush"], 10.0)
 
         receipt = teller.checks_out_articles_from(cart)
 
+        #Fake Catalog entièrement testé avant cette ligne
         self.assertAlmostEqual(receipt.total_price(), 4.975, places=2)
         self.assertEqual([], receipt.discounts)
         self.assertEqual(1, len(receipt.items))
         receipt_item = receipt.items[0]
-        self.assertEqual(apples, receipt_item.product)
+        self.assertEqual(catalog.products["apples"], receipt_item.product)
         self.assertEqual(1.99, receipt_item.price)
         self.assertAlmostEqual(receipt_item.total_price, 2.5 * 1.99, places=2)
         self.assertEqual(2.5, receipt_item.quantity)
+
+    #testsA
+    def test_ten_percent_discount(self):
+        catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(1.0)
+
+        teller.add_special_offer(SpecialOfferType.TEN_PERCENT_DISCOUNT, catalog.products["toothbrush"], 10.0)
+        receipt = teller.checks_out_articles_from(cart)
+        self.assertAlmostEqual(receipt.total_price(), 5.866, places=2)
+        self.assertEqual(1, len(receipt.discounts))
+        self.assertEqual(2, len(receipt.items))
+
+    def test_three_for_two_discount(self):
+        catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(3.0)
+
+        teller.add_special_offer(SpecialOfferType.THREE_FOR_TWO, catalog.products["toothbrush"], None)
+        receipt = teller.checks_out_articles_from(cart)
+        self.assertAlmostEqual(receipt.total_price(), 6.955, places=2)
+        self.assertEqual(1, len(receipt.discounts))
+        self.assertEqual(2, len(receipt.items))
+
+    def test_three_for_two_discount_bis(self):
+        catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(2.0)
+
+        teller.add_special_offer(SpecialOfferType.THREE_FOR_TWO, catalog.products["toothbrush"], None)
+        receipt = teller.checks_out_articles_from(cart)
+        self.assertAlmostEqual(receipt.total_price(), 6.955, places=2)
+        self.assertEqual(0, len(receipt.discounts))
+        self.assertEqual(2, len(receipt.items))
+
+    def test_five_for_amount(self):
+        catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(7.0)
+
+        teller.add_special_offer(SpecialOfferType.FIVE_FOR_AMOUNT, catalog.products["toothbrush"], 4.0)
+        receipt = teller.checks_out_articles_from(cart)
+        self.assertAlmostEqual(receipt.total_price(), 10.955, places=2)
+        self.assertEqual(1, len(receipt.discounts))
+        self.assertEqual(2, len(receipt.items))
+
+    def test_two_for_amount(self):
+        catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(2.0)
+
+        teller.add_special_offer(SpecialOfferType.TWO_FOR_AMOUNT, catalog.products["toothbrush"], 1.90)
+        receipt = teller.checks_out_articles_from(cart)
+        self.assertAlmostEqual(receipt.total_price(), 6.875, places=2)
+        self.assertEqual(1, len(receipt.discounts))
+        self.assertEqual(2, len(receipt.items))
+
+    def get_catalog_teller_and_cart_test_A(self, quantity_toothbrush):
+        catalog = self.get_test_catalog()
+        teller = Teller(catalog)
+        cart = ShoppingCart()
+        cart.add_item_quantity(catalog.products["apples"], 2.5)
+        cart.add_item_quantity(catalog.products["toothbrush"], quantity_toothbrush)
+        return catalog, teller, cart
+
+
+def main():
+    SupermarketTest().test_generic()
+    SupermarketTest().test_ten_percent_discount()
+    SupermarketTest().test_three_for_two_discount()
+    SupermarketTest().test_three_for_two_discount_bis()
+    SupermarketTest().test_five_for_amount()
+    SupermarketTest().test_two_for_amount()
+
+if __name__ == '__main__':
+    unittest.main()
