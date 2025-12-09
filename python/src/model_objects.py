@@ -25,7 +25,7 @@ class SpecialOfferType(Enum):
     FIVE_FOR_AMOUNT = 4
 
 class Offer:
-    def __init__(self, offer_type, product, argument):
+    def __init__(self, offer_type, product, argument=None):
         self.offer_type = offer_type
         self.product = product
         self.argument = argument
