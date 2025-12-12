@@ -1,6 +1,8 @@
 import unittest
 
+from Offers.SimpleDiscount import NForAmount, NForM, XPercentDiscount
 from model_objects import Product, SpecialOfferType, ProductUnit
+from receipt_printer import ReceiptPrinter
 from shopping_cart import ShoppingCart
 from teller import Teller
 from tests.fake_catalog import FakeCatalog
@@ -28,7 +30,8 @@ class SupermarketTest(unittest.TestCase):
         cart = ShoppingCart()
         cart.add_item_quantity(catalog.products["apples"], 2.5)
 
-        teller.add_special_offer(SpecialOfferType.TEN_PERCENT_DISCOUNT, catalog.products["toothbrush"], 10.0)
+        discount = XPercentDiscount(catalog.products["toothbrush"], 10.0)
+        teller.add_special_offer(discount, catalog.products["toothbrush"])
 
         receipt = teller.checks_out_articles_from(cart)
 
@@ -46,7 +49,8 @@ class SupermarketTest(unittest.TestCase):
     def test_ten_percent_discount(self):
         catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(1.0)
 
-        teller.add_special_offer(SpecialOfferType.TEN_PERCENT_DISCOUNT, catalog.products["toothbrush"], 10.0)
+        discount = XPercentDiscount(catalog.products["toothbrush"], 10.0)
+        teller.add_special_offer(discount, catalog.products["toothbrush"])
         receipt = teller.checks_out_articles_from(cart)
         self.assertAlmostEqual(receipt.total_price(), 5.866, places=2)
         self.assertEqual(1, len(receipt.discounts))
@@ -55,25 +59,30 @@ class SupermarketTest(unittest.TestCase):
     def test_three_for_two_discount(self):
         catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(3.0)
 
-        teller.add_special_offer(SpecialOfferType.THREE_FOR_TWO, catalog.products["toothbrush"], None)
+        discount = NForM(catalog.products["toothbrush"], 3, 2)
+        teller.add_special_offer(discount, catalog.products["toothbrush"])
         receipt = teller.checks_out_articles_from(cart)
         self.assertAlmostEqual(receipt.total_price(), 6.955, places=2)
         self.assertEqual(1, len(receipt.discounts))
         self.assertEqual(2, len(receipt.items))
 
+
     def test_three_for_two_discount_bis(self):
         catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(2.0)
 
-        teller.add_special_offer(SpecialOfferType.THREE_FOR_TWO, catalog.products["toothbrush"], None)
+        discount = NForM(catalog.products["toothbrush"], 3, 2)
+        teller.add_special_offer(discount, catalog.products["toothbrush"])
         receipt = teller.checks_out_articles_from(cart)
         self.assertAlmostEqual(receipt.total_price(), 6.955, places=2)
         self.assertEqual(0, len(receipt.discounts))
         self.assertEqual(2, len(receipt.items))
 
+
     def test_five_for_amount(self):
         catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(7.0)
 
-        teller.add_special_offer(SpecialOfferType.FIVE_FOR_AMOUNT, catalog.products["toothbrush"], 4.0)
+        discount = NForAmount(catalog.products["toothbrush"], 5, 4.0)
+        teller.add_special_offer(discount, catalog.products["toothbrush"])
         receipt = teller.checks_out_articles_from(cart)
         self.assertAlmostEqual(receipt.total_price(), 10.955, places=2)
         self.assertEqual(1, len(receipt.discounts))
@@ -82,11 +91,15 @@ class SupermarketTest(unittest.TestCase):
     def test_two_for_amount(self):
         catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(2.0)
 
-        teller.add_special_offer(SpecialOfferType.TWO_FOR_AMOUNT, catalog.products["toothbrush"], 1.90)
+        discount = NForAmount(catalog.products["toothbrush"], 2, 1.90)
+        teller.add_special_offer(discount, catalog.products["toothbrush"])
         receipt = teller.checks_out_articles_from(cart)
+        print("\n")
+        print(ReceiptPrinter().print_receipt(receipt))
         self.assertAlmostEqual(receipt.total_price(), 6.875, places=2)
         self.assertEqual(1, len(receipt.discounts))
         self.assertEqual(2, len(receipt.items))
+
 
     def get_catalog_teller_and_cart_test_A(self, quantity_toothbrush):
         catalog = self.get_test_catalog()

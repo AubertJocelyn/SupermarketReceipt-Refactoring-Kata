@@ -1,4 +1,3 @@
-from model_objects import Offer
 from receipt import Receipt
 
 
@@ -8,8 +7,8 @@ class Teller:
         self.catalog = catalog
         self.offers = {}
 
-    def add_special_offer(self, offer_type, product, argument):
-        self.offers[product] = Offer(offer_type, product, argument)
+    def add_special_offer(self, offer, product):
+        self.offers[product] = offer
 
     def checks_out_articles_from(self, the_cart):
         receipt = Receipt()

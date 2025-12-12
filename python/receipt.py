@@ -1,3 +1,5 @@
+from Offers.SimpleDiscount import SimpleDiscount
+
 
 class ReceiptItem:
     def __init__(self, product, quantity, price, total_price):
@@ -17,7 +19,8 @@ class Receipt:
         for item in self.items:
             total += item.total_price
         for discount in self.discounts:
-            total += discount.discount_amount
+            if isinstance(discount, SimpleDiscount):
+                total += discount.discount_amount
         return total
 
     def add_product(self, product, quantity, price, total_price):

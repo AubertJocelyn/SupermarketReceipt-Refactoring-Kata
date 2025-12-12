@@ -12,7 +12,7 @@ class ReceiptPrinter:
             result += receipt_item
 
         for discount in receipt.discounts:
-            discount_presentation = self.print_discount(discount)
+            discount_presentation = self.print_simple_discount(discount)
             result += discount_presentation
 
         result += "\n"
@@ -45,9 +45,9 @@ class ReceiptPrinter:
         else:
             return '%.3f' % item.quantity
 
-    def print_discount(self, discount):
-        name = f"{discount.description} ({discount.product.name})"
-        value = self.print_price(discount.discount_amount)
+    def print_simple_discount(self, simple_discount):
+        name = f"{simple_discount.get_message()} ({simple_discount.product.name})"
+        value = self.print_price(simple_discount.discount_amount)
         return self.format_line_with_whitespace(name, value)
 
     def present_total(self, receipt):
