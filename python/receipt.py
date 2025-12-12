@@ -1,3 +1,4 @@
+from Offers.Bundle import Bundle
 from Offers.SimpleDiscount import SimpleDiscount
 
 
@@ -19,7 +20,7 @@ class Receipt:
         for item in self.items:
             total += item.total_price
         for discount in self.discounts:
-            if isinstance(discount, SimpleDiscount):
+            if isinstance(discount, SimpleDiscount) or isinstance(discount, Bundle):
                 total += discount.discount_amount
         return total
 

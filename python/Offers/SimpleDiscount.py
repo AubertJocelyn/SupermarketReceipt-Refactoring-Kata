@@ -11,7 +11,7 @@ class SimpleDiscount(Offer):
         self.discount_amount = amount
 
     @abstractmethod
-    def get_value(self, quantity, unit_price):
+    def get_message(self):
         pass
 
     @abstractmethod

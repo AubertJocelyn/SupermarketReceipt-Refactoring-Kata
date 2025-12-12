@@ -1,5 +1,6 @@
 import unittest
 
+from Offers.Bundle import UniformXPercentDiscountBundle
 from Offers.SimpleDiscount import NForAmount, NForM, XPercentDiscount
 from model_objects import Product, SpecialOfferType, ProductUnit
 from receipt_printer import ReceiptPrinter
@@ -91,6 +92,10 @@ class SupermarketTest(unittest.TestCase):
     def test_two_for_amount(self):
         catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(2.0)
 
+        breaker = Product("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", ProductUnit.EACH)
+        catalog.add_product(breaker, 0.99)
+
+        cart.add_item_quantity(catalog.products["abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"], 0.0)
         discount = NForAmount(catalog.products["toothbrush"], 2, 1.90)
         teller.add_special_offer(discount, catalog.products["toothbrush"])
         receipt = teller.checks_out_articles_from(cart)
@@ -98,7 +103,27 @@ class SupermarketTest(unittest.TestCase):
         print(ReceiptPrinter().print_receipt(receipt))
         self.assertAlmostEqual(receipt.total_price(), 6.875, places=2)
         self.assertEqual(1, len(receipt.discounts))
-        self.assertEqual(2, len(receipt.items))
+        self.assertEqual(3, len(receipt.items))
+
+    def test_bundle(self):
+        catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(1.0)
+
+        toothpaste = Product("toothpaste", ProductUnit.EACH)
+        catalog.add_product(toothpaste, 1.79)
+
+        cart.add_item_quantity(toothpaste, 1.0)
+
+        bundle = UniformXPercentDiscountBundle((catalog.products["toothpaste"], catalog.products["toothbrush"]), 10.0)
+        teller.add_special_offer(bundle, (catalog.products["toothpaste"], catalog.products["toothbrush"]))
+
+        receipt = teller.checks_out_articles_from(cart)
+        print("\n")
+        print(ReceiptPrinter().print_receipt(receipt))
+        self.assertAlmostEqual(receipt.total_price(), 7.477, places=2)
+        self.assertEqual(1, len(receipt.discounts))
+        self.assertEqual(3, len(receipt.items))
+
+
 
 
     def get_catalog_teller_and_cart_test_A(self, quantity_toothbrush):
