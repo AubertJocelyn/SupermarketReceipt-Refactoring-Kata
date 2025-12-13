@@ -8,11 +8,13 @@ class ReceiptPrinter:
         self.columns = columns
   
     def print_receipt(self, receipt):
+        print("\n")
         result = "Products:\n"
         for item in receipt.items:
             receipt_item = self.print_receipt_item(item)
             result += receipt_item
-        result += ("\n" + "Discounts:" + "\n")
+        if receipt.discounts:
+            result += ("\n" + "Discounts:" + "\n")
         for discount in receipt.discounts:
             discount_presentation = self.choose_print_discount(discount)
             result += discount_presentation
@@ -21,6 +23,7 @@ class ReceiptPrinter:
         for ticket_discount in receipt._ticket_discounts:
             discount_presentation = self.choose_print_discount(ticket_discount)
             result += discount_presentation
+        result += self.print_fidelity_points(receipt)
 
         result += "\n"
         result += self.present_total(receipt)
@@ -81,3 +84,12 @@ class ReceiptPrinter:
         name = "Total: "
         value = self.print_price(receipt.total_price())
         return self.format_line_with_whitespace(name, value)
+
+    def print_fidelity_points(self, receipt):
+        output = "\nFidelity Points:\n"
+        names = ["fidelity points used", "fidelity points gained", "fidelity points count"]
+        values = [receipt.fidelity_points_used, receipt.fidelity_points_gained, receipt.fidelity_points_count]
+        for i in range(len(names)):
+            output += self.format_line_with_whitespace(names[i], f"{values[i]:.2f}")
+        return output
+

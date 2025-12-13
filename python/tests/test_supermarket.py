@@ -3,7 +3,7 @@ import unittest
 from Offers.Bundle import UniformXPercentDiscountBundle
 from Offers.SimpleDiscount import NForAmount, NForM, XPercentDiscount
 from Ticket import HalfPriceTicket
-from model_objects import Product, SpecialOfferType, ProductUnit
+from model_objects import Product, ProductUnit
 from receipt_printer import ReceiptPrinter
 from shopping_cart import ShoppingCart
 from teller import Teller

@@ -15,6 +15,10 @@ class Receipt:
         self._items = []
         self._discounts = []
         self._ticket_discounts = []
+        self.fidelity_points_gained = 0.0
+        self.fidelity_points_used = 0.0
+        self.fidelity_points_count = 0.0
+
 
     def total_price(self):
         total = 0
@@ -23,6 +27,9 @@ class Receipt:
         for discount in self.discounts:
             if isinstance(discount, SimpleDiscount) or isinstance(discount, Bundle):
                 total += discount.discount_amount
+        for discount in self._ticket_discounts:
+            total += discount.discount_amount
+        total -= self.fidelity_points_used/100
         return total
 
     def add_product(self, product, quantity, price, total_price):
@@ -41,3 +48,9 @@ class Receipt:
     @property
     def discounts(self):
         return self._discounts[:]
+
+    def manage_fidelity_point(self, client, fidelity_point_wish):
+        self.fidelity_points_used = min(self.total_price(), min(max(0, fidelity_point_wish), client.fidelity_points))
+        self.fidelity_points_gained = self.total_price() - self.fidelity_points_used
+        self.fidelity_points_count = client.fidelity_points + self.fidelity_points_gained - self.fidelity_points_used
+        client.fidelity_points = self.fidelity_points_count
