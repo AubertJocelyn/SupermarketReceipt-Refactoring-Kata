@@ -2,6 +2,7 @@ import unittest
 
 from Offers.Bundle import UniformXPercentDiscountBundle
 from Offers.SimpleDiscount import NForAmount, NForM, XPercentDiscount
+from Ticket import HalfPriceTicket
 from model_objects import Product, SpecialOfferType, ProductUnit
 from receipt_printer import ReceiptPrinter
 from shopping_cart import ShoppingCart
@@ -123,8 +124,40 @@ class SupermarketTest(unittest.TestCase):
         self.assertEqual(1, len(receipt.discounts))
         self.assertEqual(3, len(receipt.items))
 
+    def test_use_ticket(self):
+        catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(6.0)
 
+        min_products_quantities = {catalog.products["toothbrush"]: 6}
+        max_products_quantities = {catalog.products["toothbrush"]: 6}
+        discounted_products_quantities = {catalog.products["toothbrush"]: 6}
 
+        ticket = HalfPriceTicket(1765613954,	1766560800, min_products_quantities, max_products_quantities, discounted_products_quantities)
+        teller.add_special_offer(ticket, (catalog.products["toothbrush"],))
+
+        teller.add_ticket(ticket)
+
+        receipt = teller.checks_out_articles_from(cart)
+
+        print(ReceiptPrinter().print_receipt(receipt))
+
+        self.assertEqual(0, len(teller.client_tickets))
+        self.assertEqual(1, len(receipt._ticket_discounts))
+
+    def test_gain_ticket(self):
+        catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(6.0)
+
+        min_products_quantities = {catalog.products["toothbrush"]: 6}
+        max_products_quantities = {catalog.products["toothbrush"]: 6}
+        discounted_products_quantities = {catalog.products["toothbrush"]: 6}
+
+        ticket = HalfPriceTicket(1765613954, 1766560800, min_products_quantities, max_products_quantities,
+                                 discounted_products_quantities)
+        teller.add_special_offer(ticket, (catalog.products["toothbrush"],))
+
+        receipt = teller.checks_out_articles_from(cart)
+
+        self.assertEqual(1, len(teller.client_tickets))
+        self.assertEqual(0, len(receipt._ticket_discounts))
 
     def get_catalog_teller_and_cart_test_A(self, quantity_toothbrush):
         catalog = self.get_test_catalog()

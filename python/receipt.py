@@ -14,6 +14,7 @@ class Receipt:
     def __init__(self):
         self._items = []
         self._discounts = []
+        self._ticket_discounts = []
 
     def total_price(self):
         total = 0
@@ -29,6 +30,9 @@ class Receipt:
 
     def add_discount(self, discount):
         self._discounts.append(discount)
+
+    def add_ticket_discount(self, discount):
+        self._ticket_discounts.append(discount)
 
     @property
     def items(self):

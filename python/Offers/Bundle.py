@@ -22,7 +22,7 @@ class UniformXPercentDiscountBundle(Bundle):
         super().__init__(products)
         self.x = x
 
-    def get_messages(self):
+    def get_message(self):
         return [f"{self.x}% of" for i in range(len(self.products))]
 
     def calculate_discount_amount(self, quantities, unit_prices):

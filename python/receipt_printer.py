@@ -16,6 +16,11 @@ class ReceiptPrinter:
         for discount in receipt.discounts:
             discount_presentation = self.choose_print_discount(discount)
             result += discount_presentation
+        if receipt._ticket_discounts:
+            result += ("\n" + "Ticket discounts:" + "\n")
+        for ticket_discount in receipt._ticket_discounts:
+            discount_presentation = self.choose_print_discount(ticket_discount)
+            result += discount_presentation
 
         result += "\n"
         result += self.present_total(receipt)
@@ -53,7 +58,7 @@ class ReceiptPrinter:
     def choose_print_discount(self, discount):
         if isinstance(discount, SimpleDiscount):
             return self.print_simple_discount(discount)
-        elif isinstance(discount, UniformXPercentDiscountBundle):
+        elif isinstance(discount, Bundle):
             return self.print_bundle_discount(discount)
 
     def print_simple_discount(self, simple_discount):
@@ -63,7 +68,7 @@ class ReceiptPrinter:
 
     def print_bundle_discount(self, bundle_discount):
         output = ""
-        messages = bundle_discount.get_messages()
+        messages = bundle_discount.get_message()
         products = bundle_discount.products
         for i in range(len(messages)):
             name = f"{messages[i]} ({products[i].name})"
