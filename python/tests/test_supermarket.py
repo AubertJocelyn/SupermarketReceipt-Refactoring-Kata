@@ -1,13 +1,14 @@
 import unittest
 
 from model_objects import Product, SpecialOfferType, ProductUnit
+from receipt_printer import ReceiptPrinter
 from shopping_cart import ShoppingCart
 from teller import Teller
 from tests.fake_catalog import FakeCatalog
 
 
 class SupermarketTest(unittest.TestCase):
-    def test_ten_percent_discount(self):
+    def generic(self):
         catalog = FakeCatalog()
         toothbrush = Product("toothbrush", ProductUnit.EACH)
         catalog.add_product(toothbrush, 0.99)
@@ -22,6 +23,8 @@ class SupermarketTest(unittest.TestCase):
         cart.add_item_quantity(apples, 2.5)
 
         receipt = teller.checks_out_articles_from(cart)
+
+        print(ReceiptPrinter().print_receipt(receipt))
 
         self.assertAlmostEqual(receipt.total_price(), 4.975, places=2)
         self.assertEqual([], receipt.discounts)

@@ -7,17 +7,30 @@ class ReceiptPrinter:
   
     def print_receipt(self, receipt):
         result = ""
-        for item in receipt.items:
-            receipt_item = self.print_receipt_item(item)
-            result += receipt_item
-
-        for discount in receipt.discounts:
-            discount_presentation = self.print_discount(discount)
-            result += discount_presentation
+        print("\n")
+        result = ""
+        result += self.get_products_lines(receipt)
+        result += self.get_discounts_lines(receipt)
 
         result += "\n"
         result += self.present_total(receipt)
         return str(result)
+
+    def get_products_lines(self, receipt):
+        output = "Products:\n"
+        for item in receipt.items:
+            receipt_item = self.print_receipt_item(item)
+            output += receipt_item
+        return output
+
+    def get_discounts_lines(self, receipt):
+        output = ""
+        if receipt.discounts:
+            output += ("\n" + "Discounts:" + "\n")
+        for discount in receipt.discounts:
+            discount_presentation = self.print_discount(discount)
+            output += discount_presentation
+        return output
 
     def print_receipt_item(self, item):
         total_price_printed = self.print_price(item.total_price)
@@ -28,8 +41,11 @@ class ReceiptPrinter:
         return line
 
     def format_line_with_whitespace(self, name, value):
-        line = name
         whitespace_size = self.columns - len(name) - len(value)
+        while whitespace_size < 1:
+            name = name[:len(name) - 1]
+            whitespace_size = self.columns - len(name) - len(value)
+        line = name
         for i in range(whitespace_size):
             line += " "
         line += value
