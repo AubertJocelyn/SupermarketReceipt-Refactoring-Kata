@@ -1,6 +1,6 @@
-from Offers.Bundle import Bundle
-from Offers.SimpleDiscount import SimpleDiscount
+from Offers.Discount import Discount
 
+ExchangeRate = 100.0
 
 class ReceiptItem:
     def __init__(self, product, quantity, price, total_price):
@@ -25,11 +25,11 @@ class Receipt:
         for item in self.items:
             total += item.total_price
         for discount in self.discounts:
-            if isinstance(discount, SimpleDiscount) or isinstance(discount, Bundle):
+            if isinstance(discount, Discount):
                 total += discount.discount_amount
         for discount in self._ticket_discounts:
             total += discount.discount_amount
-        total -= self.fidelity_points_used/100
+        total -= self.fidelity_points_used/ExchangeRate
         return total
 
     def add_product(self, product, quantity, price, total_price):
@@ -50,7 +50,10 @@ class Receipt:
         return self._discounts[:]
 
     def manage_fidelity_point(self, client, fidelity_point_wish):
-        self.fidelity_points_used = min(self.total_price(), min(max(0, fidelity_point_wish), client.fidelity_points))
-        self.fidelity_points_gained = self.total_price() - self.fidelity_points_used
+        positive_wish = max(0, fidelity_point_wish)
+        possible_wish = min(positive_wish, client.fidelity_points)
+        self.fidelity_points_used = min(ExchangeRate*self.total_price(), possible_wish)
+        self.fidelity_points_gained = max(0, self.total_price() - self.fidelity_points_used)
         self.fidelity_points_count = client.fidelity_points + self.fidelity_points_gained - self.fidelity_points_used
         client.fidelity_points = self.fidelity_points_count
+

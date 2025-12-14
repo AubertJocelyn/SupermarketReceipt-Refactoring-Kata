@@ -1,7 +1,7 @@
 import unittest
 
-from Offers.Bundle import UniformXPercentDiscountBundle
-from Offers.SimpleDiscount import NForAmount, NForM, XPercentDiscount
+from Client import Client
+from Offers.Discount import NForAmount, NForM, XPercentDiscount, UniformXPercentDiscountBundle
 from Ticket import HalfPriceTicket
 from model_objects import Product, ProductUnit
 from receipt_printer import ReceiptPrinter
@@ -33,7 +33,7 @@ class SupermarketTest(unittest.TestCase):
         cart.add_item_quantity(catalog.products["apples"], 2.5)
 
         discount = XPercentDiscount(catalog.products["toothbrush"], 10.0)
-        teller.add_special_offer(discount, catalog.products["toothbrush"])
+        teller.add_special_offer(discount, (catalog.products["toothbrush"],))
 
         receipt = teller.checks_out_articles_from(cart)
 
@@ -52,7 +52,7 @@ class SupermarketTest(unittest.TestCase):
         catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(1.0)
 
         discount = XPercentDiscount(catalog.products["toothbrush"], 10.0)
-        teller.add_special_offer(discount, catalog.products["toothbrush"])
+        teller.add_special_offer(discount, (catalog.products["toothbrush"],))
         receipt = teller.checks_out_articles_from(cart)
         self.assertAlmostEqual(receipt.total_price(), 5.866, places=2)
         self.assertEqual(1, len(receipt.discounts))
@@ -62,7 +62,7 @@ class SupermarketTest(unittest.TestCase):
         catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(3.0)
 
         discount = NForM(catalog.products["toothbrush"], 3, 2)
-        teller.add_special_offer(discount, catalog.products["toothbrush"])
+        teller.add_special_offer(discount, (catalog.products["toothbrush"],))
         receipt = teller.checks_out_articles_from(cart)
         self.assertAlmostEqual(receipt.total_price(), 6.955, places=2)
         self.assertEqual(1, len(receipt.discounts))
@@ -73,7 +73,7 @@ class SupermarketTest(unittest.TestCase):
         catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(2.0)
 
         discount = NForM(catalog.products["toothbrush"], 3, 2)
-        teller.add_special_offer(discount, catalog.products["toothbrush"])
+        teller.add_special_offer(discount, (catalog.products["toothbrush"],))
         receipt = teller.checks_out_articles_from(cart)
         self.assertAlmostEqual(receipt.total_price(), 6.955, places=2)
         self.assertEqual(0, len(receipt.discounts))
@@ -84,7 +84,7 @@ class SupermarketTest(unittest.TestCase):
         catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(7.0)
 
         discount = NForAmount(catalog.products["toothbrush"], 5, 4.0)
-        teller.add_special_offer(discount, catalog.products["toothbrush"])
+        teller.add_special_offer(discount, (catalog.products["toothbrush"],))
         receipt = teller.checks_out_articles_from(cart)
         self.assertAlmostEqual(receipt.total_price(), 10.955, places=2)
         self.assertEqual(1, len(receipt.discounts))
@@ -97,8 +97,8 @@ class SupermarketTest(unittest.TestCase):
         catalog.add_product(breaker, 0.99)
 
         cart.add_item_quantity(catalog.products["abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"], 0.0)
-        discount = NForAmount(catalog.products["toothbrush"], 2, 1.90)
-        teller.add_special_offer(discount, catalog.products["toothbrush"])
+        discount = NForAmount((catalog.products["toothbrush"],), 2, 1.90)
+        teller.add_special_offer(discount, (catalog.products["toothbrush"],))
         receipt = teller.checks_out_articles_from(cart)
         print("\n")
         print(ReceiptPrinter().print_receipt(receipt))
@@ -134,13 +134,13 @@ class SupermarketTest(unittest.TestCase):
         ticket = HalfPriceTicket(1765613954,	1766560800, min_products_quantities, max_products_quantities, discounted_products_quantities)
         teller.add_special_offer(ticket, (catalog.products["toothbrush"],))
 
-        teller.add_ticket(ticket)
+        teller.add_ticket_to_client(ticket)
 
         receipt = teller.checks_out_articles_from(cart)
 
         print(ReceiptPrinter().print_receipt(receipt))
 
-        self.assertEqual(0, len(teller.client_tickets))
+        self.assertEqual(0, len(teller.client.tickets))
         self.assertEqual(1, len(receipt._ticket_discounts))
 
     def test_gain_ticket(self):
@@ -156,7 +156,26 @@ class SupermarketTest(unittest.TestCase):
 
         receipt = teller.checks_out_articles_from(cart)
 
-        self.assertEqual(1, len(teller.client_tickets))
+        self.assertEqual(1, len(teller.client.tickets))
+        self.assertEqual(0, len(receipt._ticket_discounts))
+
+    def test_use_fidelity_points(self):
+        catalog, teller, cart = self.get_catalog_teller_and_cart_test_A(6.0)
+
+        min_products_quantities = {catalog.products["toothbrush"]: 6}
+        max_products_quantities = {catalog.products["toothbrush"]: 6}
+        discounted_products_quantities = {catalog.products["toothbrush"]: 6}
+
+        ticket = HalfPriceTicket(1765613954, 1766560800, min_products_quantities, max_products_quantities,
+                                 discounted_products_quantities)
+        teller.add_special_offer(ticket, (catalog.products["toothbrush"],))
+
+        teller.add_fidelity_points_to_client(10**5)
+        receipt = teller.checks_out_articles_from(cart)
+
+        print(ReceiptPrinter().print_receipt(receipt))
+
+        self.assertEqual(1, len(teller.client.tickets))
         self.assertEqual(0, len(receipt._ticket_discounts))
 
     def get_catalog_teller_and_cart_test_A(self, quantity_toothbrush):

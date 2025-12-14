@@ -1,5 +1,4 @@
-from Offers.Bundle import Bundle, UniformXPercentDiscountBundle
-from Offers.SimpleDiscount import SimpleDiscount
+from Offers.Discount import Discount
 from model_objects import ProductUnit
 
 class ReceiptPrinter:
@@ -9,25 +8,39 @@ class ReceiptPrinter:
   
     def print_receipt(self, receipt):
         print("\n")
-        result = "Products:\n"
-        for item in receipt.items:
-            receipt_item = self.print_receipt_item(item)
-            result += receipt_item
-        if receipt.discounts:
-            result += ("\n" + "Discounts:" + "\n")
-        for discount in receipt.discounts:
-            discount_presentation = self.choose_print_discount(discount)
-            result += discount_presentation
-        if receipt._ticket_discounts:
-            result += ("\n" + "Ticket discounts:" + "\n")
-        for ticket_discount in receipt._ticket_discounts:
-            discount_presentation = self.choose_print_discount(ticket_discount)
-            result += discount_presentation
+        result = ""
+        result += self.get_products_lines(receipt)
+        result += self.get_discounts_lines(receipt)
+        result += self.get_tickets_lines(receipt)
         result += self.print_fidelity_points(receipt)
-
-        result += "\n"
         result += self.present_total(receipt)
         return str(result)
+
+    def get_products_lines(self, receipt):
+        output = "Products:\n"
+        for item in receipt.items:
+            receipt_item = self.print_receipt_item(item)
+            output += receipt_item
+        return output
+
+    def get_discounts_lines(self, receipt):
+        output = ""
+        if receipt.discounts:
+            output += ("\n" + "Discounts:" + "\n")
+        for discount in receipt.discounts:
+            discount_presentation = self.choose_print_discount(discount)
+            output += discount_presentation
+        return output
+
+    def get_tickets_lines(self, receipt):
+        output = ""
+        if receipt._ticket_discounts:
+            output += ("\n" + "Ticket discounts:" + "\n")
+        for ticket_discount in receipt._ticket_discounts:
+            discount_presentation = self.choose_print_discount(ticket_discount)
+            output += discount_presentation
+        return output
+
 
     def print_receipt_item(self, item):
         total_price_printed = self.print_price(item.total_price)
@@ -59,31 +72,30 @@ class ReceiptPrinter:
             return '%.3f' % item.quantity
 
     def choose_print_discount(self, discount):
-        if isinstance(discount, SimpleDiscount):
-            return self.print_simple_discount(discount)
-        elif isinstance(discount, Bundle):
-            return self.print_bundle_discount(discount)
+        if isinstance(discount, Discount):
+            return self.print_discount(discount)
 
-    def print_simple_discount(self, simple_discount):
-        name = f"{simple_discount.get_message()} ({simple_discount.product.name})"
-        value = self.print_price(simple_discount.discount_amount)
-        return self.format_line_with_whitespace(name, value)
-
-    def print_bundle_discount(self, bundle_discount):
+    def print_discount(self, discount):
         output = ""
-        messages = bundle_discount.get_message()
-        products = bundle_discount.products
+        messages = discount.get_message()
+        products = discount.products
         for i in range(len(messages)):
             name = f"{messages[i]} ({products[i].name})"
             value = ""
             output += self.format_line_with_whitespace(name, value)
-        output += self.format_line_with_whitespace("", self.print_price(bundle_discount.discount_amount))
+        output += self.format_line_with_whitespace("", self.print_price(discount.discount_amount))
         return output
+
+
+    def print_bundle_discount(self, discount):
+        """name = f"{simple_discount.get_message()} ({simple_discount.products[0].name})"
+        value = self.print_price(simple_discount.discount_amount)
+        return self.format_line_with_whitespace(name, value)"""
 
     def present_total(self, receipt):
         name = "Total: "
         value = self.print_price(receipt.total_price())
-        return self.format_line_with_whitespace(name, value)
+        return "\n" + self.format_line_with_whitespace(name, value)
 
     def print_fidelity_points(self, receipt):
         output = "\nFidelity Points:\n"

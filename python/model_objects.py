@@ -7,10 +7,9 @@ class Product:
 
 
 class ProductQuantity:
-    def __init__(self, product, quantity):
+    def __init__(self, product=None, quantity=None):
         self.product = product
         self.quantity = quantity
-
 
 class ProductUnit(Enum):
     EACH = 1

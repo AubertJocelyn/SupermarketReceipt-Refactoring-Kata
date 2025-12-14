@@ -1,8 +1,8 @@
 from abc import abstractmethod
 from typing import Dict
 
-from Offers.SimpleDiscount import SimpleDiscount, NForM
-from model_objects import Product, ProductQuantity
+from Offers.Discount import NForM
+from model_objects import Product
 
 
 class Ticket:
@@ -40,8 +40,9 @@ class Ticket:
 class HalfPriceTicket(Ticket):
     def __init__(self, start_valididy, end_validity, min_products_quantities, max_products_quantities, discounted_products_quantities):
         super().__init__(start_valididy, end_validity, min_products_quantities, max_products_quantities, discounted_products_quantities)
+
     def get_discount_offer(self):
-        return NForM(list(self.min_products_quantities.keys())[0], 1.0, 0.5)
+        return NForM(list(self.min_products_quantities.keys()), 1.0, 0.5)
 
 
 
