@@ -13,15 +13,10 @@ class Teller:
         self.offers[product] = Offer(offer_type, product, argument)
 
     def checks_out_articles_from(self, the_cart):
+        the_cart.set_prices(self.catalog)
         receipt = Receipt()
-        product_quantities = the_cart.items
-        for pq in product_quantities:
-            p = pq.product
-            quantity = pq.quantity
-            unit_price = self.catalog.unit_price(p)
-            price = quantity * unit_price
-            receipt.add_product(p, quantity, unit_price, price)
+        the_cart.add_products_to_receipt(receipt)
 
-        OffersHandler(the_cart, receipt, self.offers, self.catalog).handle_offers()
+        OffersHandler(the_cart, receipt, self.offers).handle_offers()
 
         return receipt
