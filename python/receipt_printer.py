@@ -6,7 +6,6 @@ class ReceiptPrinter:
         self.columns = columns
   
     def print_receipt(self, receipt):
-        result = ""
         print("\n")
         result = ""
         result += self.get_products_lines(receipt)
@@ -62,9 +61,15 @@ class ReceiptPrinter:
             return '%.3f' % item.quantity
 
     def print_discount(self, discount):
-        name = f"{discount.description} ({discount.product.name})"
-        value = self.print_price(discount.discount_amount)
-        return self.format_line_with_whitespace(name, value)
+        output = ""
+        messages = discount.get_message()
+        products = discount.products
+        for i in range(len(messages)):
+            name = f"{messages[i]} ({products[i].name})"
+            value = ""
+            output += self.format_line_with_whitespace(name, value)
+        output += self.format_line_with_whitespace("", self.print_price(discount.discount_amount))
+        return output
 
     def present_total(self, receipt):
         name = "Total: "

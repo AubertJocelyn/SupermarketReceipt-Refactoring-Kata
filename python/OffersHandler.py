@@ -1,49 +1,32 @@
-import math
+from Discount import Discount
+from model_objects import Product
 
-from model_objects import SpecialOfferType, Discount
 
 class OffersHandler:
     def __init__(self, cart, receipt, offers):
         self.cart = cart
         self.receipt = receipt
         self.offers = offers
+        self.valid_discounts = {}
 
     def handle_offers(self):
-        for p in self.cart.get_products():
-            quantity = self.cart.get_quantity(p)
-            if p in self.offers.keys():
-                offer = self.offers[p]
-                unit_price = self.cart.get_price(p)
-                quantity_as_int = int(quantity)
-                discount = None
-                x = 1
-                if offer.offer_type == SpecialOfferType.THREE_FOR_TWO:
-                    x = 3
+        self.set_valid_discounts()
+        self.apply_discounts()
+        return self.receipt
 
-                elif offer.offer_type == SpecialOfferType.TWO_FOR_AMOUNT:
-                    x = 2
-                    if quantity_as_int >= 2:
-                        total = offer.argument * (quantity_as_int / x) + quantity_as_int % 2 * unit_price
-                        discount_n = unit_price * quantity - total
-                        discount = Discount(p, "2 for " + str(offer.argument), -discount_n)
+    def apply_discounts(self):
+        for products in self.valid_discounts.keys():
+            discount = self.valid_discounts[products]
+            quantities = [self.cart.get_quantity(p) for p in products]
+            unit_prices = [self.cart.get_price(p) for p in products]
+            amount = discount.calculate_discount_amount(quantities, unit_prices)
+            if amount < 0:
+                discount.set_discount_amount(amount)
+                self.receipt.add_discount(discount)
 
-                if offer.offer_type == SpecialOfferType.FIVE_FOR_AMOUNT:
-                    x = 5
-
-                number_of_x = math.floor(quantity_as_int / x)
-                if offer.offer_type == SpecialOfferType.THREE_FOR_TWO and quantity_as_int > 2:
-                    discount_amount = quantity * unit_price - (
-                            (number_of_x * 2 * unit_price) + quantity_as_int % 3 * unit_price)
-                    discount = Discount(p, "3 for 2", -discount_amount)
-
-                if offer.offer_type == SpecialOfferType.TEN_PERCENT_DISCOUNT:
-                    discount = Discount(p, str(offer.argument) + "% off",
-                                        -quantity * unit_price * offer.argument / 100.0)
-
-                if offer.offer_type == SpecialOfferType.FIVE_FOR_AMOUNT and quantity_as_int >= 5:
-                    discount_total = unit_price * quantity - (
-                            offer.argument * number_of_x + quantity_as_int % 5 * unit_price)
-                    discount = Discount(p, str(x) + " for " + str(offer.argument), -discount_total)
-
-                if discount:
-                    self.receipt.add_discount(discount)
+    def set_valid_discounts(self):
+        for key in self.offers.keys():
+            if all(isinstance(e, Product) for e in key):
+                if all(p in self.cart.get_products() for p in key):
+                    if isinstance(self.offers[key], Discount):
+                        self.valid_discounts[key] = self.offers[key]
