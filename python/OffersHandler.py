@@ -3,15 +3,18 @@ import math
 from model_objects import SpecialOfferType, Discount
 
 class OffersHandler:
-    def __init__(self):
-        pass
+    def __init__(self, cart, receipt, offers, catalog):
+        self.cart = cart
+        self.receipt = receipt
+        self.offers = offers
+        self.catalog = catalog
 
-    def handle_offers(self, cart, receipt, offers, catalog):
-        for p in cart._product_quantities.keys():
-            quantity = cart._product_quantities[p]
-            if p in offers.keys():
-                offer = offers[p]
-                unit_price = catalog.unit_price(p)
+    def handle_offers(self):
+        for p in self.cart._product_quantities.keys():
+            quantity = self.cart._product_quantities[p]
+            if p in self.offers.keys():
+                offer = self.offers[p]
+                unit_price = self.catalog.unit_price(p)
                 quantity_as_int = int(quantity)
                 discount = None
                 x = 1
@@ -44,4 +47,4 @@ class OffersHandler:
                     discount = Discount(p, str(x) + " for " + str(offer.argument), -discount_total)
 
                 if discount:
-                    receipt.add_discount(discount)
+                    self.receipt.add_discount(discount)

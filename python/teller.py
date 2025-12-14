@@ -22,6 +22,6 @@ class Teller:
             price = quantity * unit_price
             receipt.add_product(p, quantity, unit_price, price)
 
-        OffersHandler().handle_offers(the_cart, receipt, self.offers, self.catalog)
+        OffersHandler(the_cart, receipt, self.offers, self.catalog).handle_offers()
 
         return receipt
