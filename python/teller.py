@@ -18,10 +18,14 @@ class Teller:
     def add_ticket_to_client(self, ticket):
         self.client.add_ticket(ticket)
 
+    def add_fidelity_points_to_client(self, gain):
+        self.client.fidelity_points += gain
+
     def checks_out_articles_from(self, the_cart):
         the_cart.set_prices(self.catalog)
         receipt = Receipt()
         the_cart.add_products_to_receipt(receipt)
         receipt = OffersHandler(receipt, the_cart, self.offers, self.client.tickets).handle_offers()
+        receipt.manage_fidelity_point(self.client)
 
         return receipt

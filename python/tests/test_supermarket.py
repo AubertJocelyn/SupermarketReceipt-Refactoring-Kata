@@ -1,5 +1,6 @@
 import unittest
 
+from Client import Client
 from Discount import NForM, NForAmount, XPercentDiscount, UniformXPercentDiscountBundle
 from Ticket import HalfPriceTicket
 from model_objects import Product, ProductUnit
@@ -141,6 +142,29 @@ class SupermarketTest(unittest.TestCase):
         teller.add_special_offer(ticket, (catalog.products["toothbrush"],))
 
         receipt = teller.checks_out_articles_from(cart)
+
+        self.assertEqual(1, len(teller.client.tickets))
+        self.assertEqual(0, len(receipt._ticket_discounts))
+
+    def test_use_fidelity_points(self):
+        catalog = self.get_catalog_test()
+        client = Client(fidelity_points_spent=10**6, fidelity_points=10**5)
+        teller = Teller(catalog, client)
+        cart = ShoppingCart()
+        cart.add_item_quantity(catalog.products["apples"], 2.5)
+        cart.add_item_quantity(catalog.products["toothbrush"], 6.0)
+
+        min_products_quantities = {catalog.products["toothbrush"]: 6}
+        max_products_quantities = {catalog.products["toothbrush"]: 6}
+        discounted_products_quantities = {catalog.products["toothbrush"]: 6}
+
+        ticket = HalfPriceTicket(1765613954, 1766560800, min_products_quantities, max_products_quantities,
+                                 discounted_products_quantities)
+        teller.add_special_offer(ticket, (catalog.products["toothbrush"],))
+
+        receipt = teller.checks_out_articles_from(cart)
+
+        print(ReceiptPrinter().print_receipt(receipt))
 
         self.assertEqual(1, len(teller.client.tickets))
         self.assertEqual(0, len(receipt._ticket_discounts))
