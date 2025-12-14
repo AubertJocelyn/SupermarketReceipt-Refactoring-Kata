@@ -1,6 +1,6 @@
 import unittest
 
-from Discount import NForM, NForAmount, XPercentDiscount
+from Discount import NForM, NForAmount, XPercentDiscount, UniformXPercentDiscountBundle
 from model_objects import Product, ProductUnit
 from receipt_printer import ReceiptPrinter
 from shopping_cart import ShoppingCart
@@ -87,6 +87,22 @@ class SupermarketTest(unittest.TestCase):
         print("\n")
         print(ReceiptPrinter().print_receipt(receipt))
         self.assert_price_and_len_receipt(receipt, 6.875, 1, 3)
+
+    def test_bundle(self):
+        catalog, teller, cart = self.get_catal_tel_cart_test(1.0)
+
+        toothpaste = Product("toothpaste", ProductUnit.EACH)
+        catalog.add_product(toothpaste, 1.79)
+
+        cart.add_item_quantity(toothpaste, 1.0)
+
+        bundle = UniformXPercentDiscountBundle((catalog.products["toothpaste"], catalog.products["toothbrush"]), 10.0)
+        teller.add_special_offer(bundle, (catalog.products["toothpaste"], catalog.products["toothbrush"]))
+
+        receipt = teller.checks_out_articles_from(cart)
+        print("\n")
+        print(ReceiptPrinter().print_receipt(receipt))
+        self.assert_price_and_len_receipt(receipt, 7.477, 1, 3)
 
     def assert_price_and_len_receipt(self, receipt, price, a, b):
         self.assertEqual(a, len(receipt.discounts))
