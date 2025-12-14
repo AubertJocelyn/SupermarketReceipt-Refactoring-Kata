@@ -1,17 +1,17 @@
 from model_objects import ProductUnit
 
+
 class ReceiptPrinter:
 
     def __init__(self, columns=40):
         self.columns = columns
-  
+
     def print_receipt(self, receipt):
         print("\n")
         result = ""
         result += self.get_products_lines(receipt)
         result += self.get_discounts_lines(receipt)
-
-        result += "\n"
+        result += self.get_tickets_lines(receipt)
         result += self.present_total(receipt)
         return str(result)
 
@@ -28,6 +28,15 @@ class ReceiptPrinter:
             output += ("\n" + "Discounts:" + "\n")
         for discount in receipt.discounts:
             discount_presentation = self.print_discount(discount)
+            output += discount_presentation
+        return output
+
+    def get_tickets_lines(self, receipt):
+        output = ""
+        if receipt._ticket_discounts:
+            output += ("\n" + "Ticket discounts:" + "\n")
+        for ticket_discount in receipt._ticket_discounts:
+            discount_presentation = self.print_discount(ticket_discount)
             output += discount_presentation
         return output
 
@@ -74,4 +83,4 @@ class ReceiptPrinter:
     def present_total(self, receipt):
         name = "Total: "
         value = self.print_price(receipt.total_price())
-        return self.format_line_with_whitespace(name, value)
+        return "\n" + self.format_line_with_whitespace(name, value)
